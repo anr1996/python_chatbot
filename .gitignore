@@ -1,0 +1,6 @@
+results/checkpoint-*/model.safetensors
+results/checkpoint-*/optimizer.pt
+path/to/xsum_dataset_directory/
+*.json # If your dataset files are in JSON format
+path/to/xsum_dataset_directory/
+*.json # If your dataset files are in JSON format

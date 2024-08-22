@@ -2,6 +2,7 @@ import pandas as pd
 from transformers import T5Tokenizer, T5ForConditionalGeneration, Trainer, TrainingArguments
 import torch
 from torch.utils.data import Dataset
+from datasets import load_dataset
 
 # Load the T5 model and tokenizer
 tokenizer = T5Tokenizer.from_pretrained('t5-small')
@@ -52,8 +53,25 @@ class ConcisenessDataset(Dataset):
 # Load your CSV file
 df = pd.read_csv("wiki-conciseness-dataset/concise_full.tsv", sep="\t", header=None)
 
-# Create the dataset
-dataset = ConcisenessDataset(df, tokenizer)
+# Load the XSum dataset
+xsum_dataset = load_dataset("xsum")
+
+# Preprocess the XSum dataset
+def preprocess_xsum(example):
+    return {'input': example['document'], 'target': example['summary']}
+
+xsum_dataset = xsum_dataset.map(preprocess_xsum, remove_columns=['documents', 'summary'])
+
+#  Convert XSum dataset to DataFrame
+xsum_df = pd.DataFrame({
+    'input': xsum_dataset['train']['input'],
+    'target': xsum_dataset['train']['target']
+})
+
+df_combined = pd.concat([df, xsum_df], ignore_index=True)
+
+# Create the combined dataset
+dataset = ConcisenessDataset(df_combined, tokenizer)
 
 # Set up training arguments
 training_args = TrainingArguments(
